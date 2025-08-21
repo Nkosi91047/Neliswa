@@ -1,0 +1,479 @@
+
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>For Sphiwayinkhosi — with love</title>
+<meta name="description" content="A romantic, soft, animated love page for Sphiwayinkhosi — made with love by Nkosingphile." />
+
+<style>
+  :root{
+    --bg-1:#1b0b12; --bg-2:#2a1220;
+    --accent:#ff7aa2; --accent-soft:#ffb3c7;
+    --gold:#ffd7a8; --white-soft:#fff6f9;
+    --shadow:rgba(0,0,0,.35);
+    --pulse: 0.25; /* updated live by JS from music bass */
+  }
+
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    color:var(--white-soft);
+    background:
+      radial-gradient(1000px 800px at 60% -10%, #402135 0%, #220f1b 45%, #140811 100%) fixed,
+      linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    min-height:100svh; overflow-x:hidden; opacity:0;
+    animation: pageIn .9s ease forwards;
+  }
+  @keyframes pageIn{from{opacity:0;filter:blur(6px)} to{opacity:1;filter:blur(0)}}
+
+  .layer{position:fixed; inset:0; pointer-events:none}
+  canvas{display:block}
+
+  .wrap{
+    position:relative; z-index:5; max-width: 980px;
+    margin: clamp(36px,8vh,80px) auto; padding: clamp(18px,4vw,36px);
+    backdrop-filter: blur(10px) saturate(130%);
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:22px; box-shadow: 0 20px 60px var(--shadow);
+  }
+
+  /* Header with heartbeat */
+  .header{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;
+  }
+  .name{
+    font-weight:800; font-size: clamp(26px,4.2vw,44px); letter-spacing:.3px;
+    color: var(--white-soft);
+    text-shadow:
+      0 0 calc(6px + 12px * var(--pulse)) rgba(255,122,162, .7),
+      0 0 calc(12px + 26px * var(--pulse)) rgba(255,178,199,.4);
+    transform: scale(calc(1 + var(--pulse)*.04));
+    transition: transform .08s linear;
+  }
+  .heartblink{
+    width:12px; height:12px; border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 calc(10px + 12px * var(--pulse)) rgba(255,122,162,.9);
+  }
+  .sub{
+    font-size: clamp(14px,2.2vw,16px); color:#ffe9f1; opacity:.95;
+    margin:6px 0 0 0;
+  }
+
+  /* Typing & lines container */
+  .msg{
+    margin-top:14px; line-height:1.55; font-size: clamp(16px,2.6vw,20px);
+  }
+  .type-line{
+    display:inline-block; border-right:2px solid var(--accent);
+    white-space:pre-wrap; overflow:hidden; vertical-align:bottom;
+    min-height:1.2em;
+  }
+  .line{ opacity:0; transform: translateY(8px); transition: opacity .6s ease, transform .6s ease; }
+  .line.show{ opacity:1; transform: translateY(0); }
+
+  /* Buttons */
+  .actions{ margin-top: 22px; display:flex; gap:12px; flex-wrap:wrap; }
+  .btn{
+    appearance:none; border:none; padding:12px 18px; border-radius:999px;
+    font-weight:600; letter-spacing:.2px; cursor:pointer;
+    background: radial-gradient(120% 140% at 30% 30%, var(--accent-soft), var(--accent));
+    color:#3e0f21; box-shadow: 0 8px 26px rgba(255,122,162,.35);
+    transform: translateZ(0);
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  }
+  .btn:hover{ transform: translateY(-2px); filter: brightness(1.06) }
+  .btn:active{ transform: translateY(0) scale(.98) }
+  .btn.secondary{
+    background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+    color:var(--white-soft);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.20), 0 6px 18px rgba(0,0,0,.25);
+  }
+
+  /* Golden reveal */
+  .gold-reveal{
+    margin-top:16px; font-weight:800; letter-spacing:.5px; text-align:left;
+    font-size: clamp(18px,3vw,24px);
+    background: linear-gradient(92deg, #fff1d6, #ffd7a8 40%, #ffe4bd 60%, #ffffff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 0 calc(8px + 10px * var(--pulse)) rgba(255,215,168,.35);
+    opacity:0; transform: translateY(6px) scale(.98); transition: all .6s ease;
+  }
+  .gold-reveal.show{ opacity:1; transform: translateY(0) scale(1); }
+
+  /* Visualizer */
+  .viz-shell{ margin-top: 24px; display:grid; gap:10px; }
+  .viz{
+    width:100%; height: 120px; border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.12);
+    overflow:hidden; box-shadow: inset 0 10px 28px rgba(0,0,0,.35);
+  }
+  .credit{ margin-top: 10px; font-size:12px; color:#ffe9f1b3; }
+
+  /* Footer */
+  .sig{ margin-top: 30px; font-size:14px; color:var(--gold); letter-spacing:.3px; opacity:.95; display:flex; align-items:center; gap:8px; }
+  .heart-dot{ width:10px; height:10px; background:var(--accent); border-radius:50%; box-shadow: 0 0 18px var(--accent); }
+
+  /* Floating hearts */
+  .hearts{ position:fixed; inset:0; pointer-events:none; z-index:3; }
+  .heart{ position:absolute; width:12px; height:12px; transform: rotate(45deg); animation: floatUp linear forwards; filter: drop-shadow(0 0 8px rgba(255,122,162,.9)); }
+  .heart::before, .heart::after{
+    content:""; position:absolute; width:12px; height:12px;
+    background: radial-gradient(circle at 30% 30%, #ffd0dd 0%, #ff7aa2 60%, #e54c82 100%);
+    border-radius:50%;
+  }
+  .heart::before{ top:-6px; left:0 } .heart::after{ left:-6px; top:0 }
+  @keyframes floatUp{ from{ transform: translateY(0) rotate(45deg); opacity:.95 } to{ transform: translateY(-120vh) rotate(45deg); opacity:0 } }
+
+  /* Modal (Love letter) */
+  .modal{ position: fixed; inset:0; display:none; place-items:center; z-index:10; }
+  .modal.show{ display:grid; }
+  .modal::before{
+    content:""; position:absolute; inset:0; backdrop-filter: blur(8px) saturate(130%);
+    background: rgba(20,8,17,.55);
+  }
+  .card{
+    position:relative; z-index:1; width:min(720px,90vw);
+    background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+    border:1px solid rgba(255,255,255,.16); border-radius:18px; padding:20px clamp(16px,4vw,28px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .card h3{ margin:0 0 8px 0; font-size: clamp(20px,3.6vw,28px) }
+  .card p{ margin:8px 0; line-height:1.6 }
+  .xbtn{
+    position:absolute; top:10px; right:10px; border:none; background:transparent; color:#ffe9f1; font-size:24px; cursor:pointer;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
+  }
+
+  @media (max-width:520px){ .viz{ height:100px } }
+
+  noscript{
+    display:block; text-align:center; padding:12px; margin:10px;
+    background:#4a1f34; border-radius:8px; border:1px solid #ffffff33;
+  }
+</style>
+</head>
+<body>
+  <!-- Background layers -->
+  <canvas id="bg-particles" class="layer" aria-hidden="true"></canvas>
+  <canvas id="petals" class="layer" aria-hidden="true"></canvas>
+  <div class="hearts" id="hearts" aria-hidden="true"></div>
+
+  <!-- Content -->
+  <main class="wrap">
+    <div class="header">
+      <div class="heartblink" aria-hidden="true"></div>
+      <div class="name">For Sphiwayinkhosi 💕</div>
+    </div>
+    <p class="sub">Just me, you, and this moment.</p>
+
+    <!-- Your message: typing + line fade -->
+    <section class="msg" id="msg">
+      <div class="line"><span class="type-line" id="type"></span></div>
+      <div class="line" id="l2">I really love the way your eyes close when you smile.</div>
+      <div class="line" id="l3">Your voice stays in my head, even with the distance between us.</div>
+      <div class="line" id="l4">Forever yours — Nkosingphile ❤️</div>
+    </section>
+
+    <div class="actions">
+      <button class="btn" id="playBtn">Play</button>
+      <button class="btn secondary" id="muteBtn">Mute</button>
+      <button class="btn" id="letterBtn">💌 Open love letter</button>
+      <button class="btn secondary" id="revealBtn">✨ Reveal a secret</button>
+    </div>
+
+    <!-- Golden reveal text -->
+    <div id="gold" class="gold-reveal">Sphiwayinkhosi, I love you.</div>
+
+    <!-- Visualizer -->
+    <div class="viz-shell">
+      <canvas id="viz" class="viz" aria-label="music visualizer"></canvas>
+      <div class="credit">Song placeholder: <em>Sevyn Streeter — Taboo</em> (replace <code>song.mp3</code> below with your file)</div>
+    </div>
+
+    <!-- Signature -->
+    <div class="sig">
+      <span class="heart-dot" aria-hidden="true"></span>
+      <span>made with love by Nkosingphile</span>
+    </div>
+  </main>
+
+  <!-- Audio (put your mp3 here) -->
+  <audio id="bg-music" preload="auto" crossorigin="anonymous">
+    <!-- Example: <source src="taboo.mp3" type="audio/mpeg" /> -->
+    <source src="song.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Love Letter Modal -->
+  <div class="modal" id="modal">
+    <div class="card">
+      <button class="xbtn" id="closeModal" aria-label="Close">✕</button>
+      <h3>My letter to you, Sphiwayinkhosi</h3>
+      <p>You’re the most beautiful girl I’ve ever known — that smile takes my breath away. I love the way your eyes close when you smile, the softness of your voice, and the warmth you carry into every moment.</p>
+      <p>Even with the distance between us, I feel you with me. In my thoughts, in my heart, in every little quiet space of my day. You are my calm, my joy, my favorite reason.</p>
+      <p>Forever yours,<br/>Nkosingphile ❤️</p>
+    </div>
+  </div>
+
+  <noscript>For the full experience (typing, petals, particles, visualizer, heartbeat), please enable JavaScript.</noscript>
+
+<script>
+/* ----------------- Personalized typing + line reveals ----------------- */
+const firstLine = "You’re the most beautiful girl I’ve ever known, that smile 😍😍";
+const typeEl = document.getElementById('type');
+let idx = 0;
+function typeLoop(){
+  typeEl.textContent = firstLine.slice(0, idx);
+  if(idx < firstLine.length){ idx++; setTimeout(typeLoop, 60 + Math.random()*60); }
+  else{
+    // reveal other lines, staggered
+    setTimeout(()=>document.getElementById('l2').classList.add('show'), 300);
+    setTimeout(()=>document.getElementById('l3').classList.add('show'), 900);
+    setTimeout(()=>document.getElementById('l4').classList.add('show'), 1500);
+    // stop the caret after a moment
+    setTimeout(()=> typeEl.parentElement.classList.add('show'), 50);
+  }
+}
+document.querySelectorAll('.line')[0].classList.add('show');
+typeLoop();
+
+/* ----------------- Floating hearts ----------------- */
+const heartsHost = document.getElementById('hearts');
+function spawnHeart(){
+  const h = document.createElement('div');
+  h.className = 'heart';
+  const size = 8 + Math.random()*14;
+  h.style.width = h.style.height = size + 'px';
+  h.style.left = (Math.random()*100) + 'vw';
+  h.style.bottom = '-20px';
+  const dur = 5 + Math.random()*6;
+  h.style.animationDuration = dur + 's';
+  h.style.opacity = 0.7 + Math.random()*0.3;
+  heartsHost.appendChild(h);
+  setTimeout(()=>h.remove(), dur*1000);
+}
+setInterval(spawnHeart, 320);
+
+/* ----------------- Petals (canvas) ----------------- */
+const petalsCanvas = document.getElementById('petals');
+const ptx = petalsCanvas.getContext('2d');
+let petals, pw, ph;
+
+function resizePetals(){
+  pw = petalsCanvas.width = innerWidth * devicePixelRatio;
+  ph = petalsCanvas.height = innerHeight * devicePixelRatio;
+}
+addEventListener('resize', resizePetals, {passive:true});
+resizePetals();
+
+function makePetal(){
+  return { x: Math.random()*pw, y: -Math.random()*ph, r: (8 + Math.random()*12)*devicePixelRatio, s: .4 + Math.random()*.9, a: Math.random()*Math.PI*2, v: 0.4 + Math.random()*0.8 }
+}
+petals = Array.from({length: 36}, makePetal);
+
+function drawPetal(p){
+  ptx.save(); ptx.translate(p.x, p.y); ptx.rotate(Math.sin(p.a)*.6);
+  const g = ptx.createRadialGradient(0,0,1, 0,0,p.r);
+  g.addColorStop(0, '#ffe0ea'); g.addColorStop(.6, '#ffb3c7'); g.addColorStop(1, 'rgba(255,122,162,.6)');
+  ptx.fillStyle = g;
+  ptx.beginPath();
+  ptx.moveTo(0, -p.r);
+  ptx.quadraticCurveTo(p.r, -p.r*0.2, 0, p.r);
+  ptx.quadraticCurveTo(-p.r, -p.r*0.2, 0, -p.r);
+  ptx.closePath();
+  ptx.shadowColor = 'rgba(255,122,162,.45)'; ptx.shadowBlur = 20; ptx.fill();
+  ptx.restore();
+}
+function stepPetals(){
+  ptx.clearRect(0,0,pw,ph);
+  for(const p of petals){
+    p.y += p.v * devicePixelRatio * 2;
+    p.x += Math.sin(p.y*0.002)*1.2*devicePixelRatio;
+    p.a += 0.02;
+    if(p.y > ph + 60*devicePixelRatio){ p.y = -40*devicePixelRatio; p.x = Math.random()*pw; }
+    drawPetal(p);
+  }
+  requestAnimationFrame(stepPetals);
+}
+stepPetals();
+
+/* ----------------- Dreamy particles (canvas) ----------------- */
+const partCanvas = document.getElementById('bg-particles');
+const ctx = partCanvas.getContext('2d');
+let W, H, particles;
+function resizeParticles(){
+  W = partCanvas.width = innerWidth * devicePixelRatio;
+  H = partCanvas.height = innerHeight * devicePixelRatio;
+}
+addEventListener('resize', resizeParticles, {passive:true});
+resizeParticles();
+
+function makeParticle(){
+  return { x: Math.random()*W, y: Math.random()*H, r: (1 + Math.random()*2.2) * devicePixelRatio, a: Math.random()*Math.PI*2, s: 0.2 + Math.random()*0.6, hue: 330 + Math.random()*30 }
+}
+particles = Array.from({length: 120}, makeParticle);
+
+let mx = W/2, my = H/2;
+addEventListener('mousemove', e=>{
+  mx = (e.clientX || innerWidth/2) * devicePixelRatio;
+  my = (e.clientY || innerHeight/2) * devicePixelRatio;
+},{passive:true});
+
+function drawParticles(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of particles){
+    p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s; p.a += (Math.random()-0.5)*0.05;
+    p.x += (mx - p.x) * 0.0005; p.y += (my - p.y) * 0.0005;
+    if(p.x < -50) p.x = W+50; if(p.x > W+50) p.x = -50; if(p.y < -50) p.y = H+50; if(p.y > H+50) p.y = -50;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*3);
+    grad.addColorStop(0, `hsla(${p.hue}, 95%, 85%, .9)`); grad.addColorStop(1, `hsla(${p.hue}, 85%, 45%, 0)`);
+    ctx.fillStyle = grad; ctx.fill();
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* ----------------- Music controls + visualizer + heartbeat sync ----------------- */
+const audio = document.getElementById('bg-music');
+const playBtn = document.getElementById('playBtn');
+const muteBtn = document.getElementById('muteBtn');
+const gold = document.getElementById('gold');
+
+let audioCtx, analyser, srcNode, dataArr, vizCtx, vizW, vizH, rafId;
+
+function setupAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  const bufferLength = analyser.frequencyBinCount;
+  dataArr = new Uint8Array(bufferLength);
+  srcNode = audioCtx.createMediaElementSource(audio);
+  srcNode.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  // Visualizer canvas
+  const viz = document.getElementById('viz');
+  vizW = viz.width = viz.clientWidth * devicePixelRatio;
+  vizH = viz.height = viz.clientHeight * devicePixelRatio;
+  vizCtx = viz.getContext('2d');
+  addEventListener('resize', ()=>{
+    viz.width = viz.clientWidth * devicePixelRatio;
+    viz.height = viz.clientHeight * devicePixelRatio;
+    vizW = viz.width; vizH = viz.height;
+  });
+}
+
+function drawViz(){
+  analyser.getByteFrequencyData(dataArr);
+  vizCtx.clearRect(0,0,vizW,vizH);
+
+  // Bass (bins ~2-5) for heartbeat + glow
+  const bass = (dataArr[2]+dataArr[3]+dataArr[4]+dataArr[5]) / 4 / 255;
+  document.documentElement.style.setProperty('--pulse', (0.15 + bass*0.85).toFixed(3));
+
+  // Glow bg
+  const glow = 0.25 + bass*0.35;
+  const grad = vizCtx.createLinearGradient(0,0,0,vizH);
+  grad.addColorStop(0, `rgba(255, 186, 210, ${glow})`);
+  grad.addColorStop(1, `rgba(255, 122, 162, ${glow*0.6})`);
+  vizCtx.fillStyle = grad; vizCtx.fillRect(0,0,vizW,vizH);
+
+  // Bars
+  const barCount = 48;
+  const step = Math.floor(dataArr.length / barCount);
+  const gap = 4 * devicePixelRatio;
+  const barW = (vizW - (barCount-1)*gap) / barCount;
+  for(let i=0;i<barCount;i++){
+    const v = dataArr[i*step] / 255;
+    const h = v * (vizH * 0.85);
+    const x = i*(barW+gap);
+    const y = vizH - h;
+    const r = 8 * devicePixelRatio;
+    roundRect(vizCtx, x, y, barW, h, Math.min(r, barW/2, h/2));
+    vizCtx.fillStyle = `rgba(255, 122, 162, ${0.35 + v*0.65})`;
+    vizCtx.fill();
+  }
+
+  // Soft heart pulse overlay
+  const heartSize = (18 + bass*28) * devicePixelRatio;
+  vizCtx.save();
+  vizCtx.translate(vizW - heartSize*1.6, heartSize*1.8);
+  drawHeart(vizCtx, heartSize, `rgba(255, 220, 233, ${0.5 + bass*0.4})`);
+  vizCtx.restore();
+
+  rafId = requestAnimationFrame(drawViz);
+}
+function roundRect(c, x, y, w, h, r){
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.arcTo(x+w, y, x+w, y+h, r);
+  c.arcTo(x+w, y+h, x, y+h, r);
+  c.arcTo(x, y+h, x, y, r);
+  c.arcTo(x, y, x+w, y, r);
+  c.closePath();
+}
+function drawHeart(c, s, color){
+  c.save(); c.rotate(Math.PI/4); c.fillStyle = color;
+  c.shadowColor = 'rgba(255,122,162,.65)'; c.shadowBlur = s*0.9;
+  c.fillRect(-s/2, -s/2, s, s);
+  c.beginPath(); c.arc(0, -s/2, s/2, 0, Math.PI*2); c.arc(-s/2, 0, s/2, 0, Math.PI*2); c.fill();
+  c.restore();
+}
+
+// Buttons
+playBtn.addEventListener('click', async () => {
+  try{
+    setupAudio();
+    if(audio.paused){
+      await audio.play();
+      playBtn.textContent = 'Pause';
+      if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+      cancelAnimationFrame(rafId); rafId = requestAnimationFrame(drawViz);
+    }else{
+      audio.pause(); playBtn.textContent = 'Play';
+      cancelAnimationFrame(rafId);
+    }
+  }catch(e){ console.warn('Playback error:', e); }
+});
+muteBtn.addEventListener('click', ()=>{
+  audio.muted = !audio.muted;
+  muteBtn.textContent = audio.muted ? 'Unmute' : 'Mute';
+});
+
+// Gentle autoplay attempt
+(async function gentleAutoplay(){
+  try{
+    setupAudio();
+    audio.muted = true; await audio.play();
+    setTimeout(()=>{ audio.muted = false; }, 1200);
+    playBtn.textContent = 'Pause';
+    rafId = requestAnimationFrame(drawViz);
+  }catch(_){ /* user gesture needed */ }
+})();
+
+/* ----------------- Secret touches ----------------- */
+// Love letter modal
+const modal = document.getElementById('modal');
+document.getElementById('letterBtn').addEventListener('click', ()=>modal.classList.add('show'));
+document.getElementById('closeModal').addEventListener('click', ()=>modal.classList.remove('show'));
+modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.classList.remove('show'); });
+
+// Golden reveal
+document.getElementById('revealBtn').addEventListener('click', ()=> gold.classList.toggle('show'));
+
+/* ----------------- Utilities ----------------- */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ cancelAnimationFrame(rafId); }
+  else if(audioCtx && !audio.paused){ rafId = requestAnimationFrame(drawViz); }
+});
+</script>
+</body>
+</html>
